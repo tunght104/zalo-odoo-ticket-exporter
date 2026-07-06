@@ -4,6 +4,10 @@ export const TOGGLE_BTN_ID = "zme-toggle-btn";
 export const TOAST_ID = "zme-toast";
 export const STYLES_ID = "zme-styles";
 
+// ─── Storage Keys ─────────────────────────────────────────────────────────────
+/** Key used to persist the toggle button's vertical position (top px). */
+export const TOGGLE_BTN_TOP_KEY = "zmeBtnTop";
+
 // ─── Zalo DOM Selectors ───────────────────────────────────────────────────────
 export const ZALO_SELECTORS = {
   /** Selector for individual chat message items */
@@ -24,6 +28,7 @@ export const CSS_CLASSES = {
   TOGGLE_ACTIVE: "zme-active",
   COPIED: "zme-copied",
   TOAST_SHOW: "zme-show",
+  DRAGGING: "zme-dragging",
 } as const;
 
 // ─── Timing (milliseconds) ───────────────────────────────────────────────────

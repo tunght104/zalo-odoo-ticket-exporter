@@ -11,7 +11,7 @@ export const SIDEBAR_STYLES = `
 /* ── Toggle Button ── */
 #zme-toggle-btn {
   position: fixed;
-  bottom: 80px;
+  top: 200px; /* default; overridden by JS drag/storage */
   right: 24px;
   z-index: 999999;
   display: flex;
@@ -25,18 +25,20 @@ export const SIDEBAR_STYLES = `
   font-weight: 600;
   border: none;
   border-radius: 24px;
-  cursor: pointer;
+  cursor: grab;
   box-shadow: 0 4px 20px rgba(99,102,241,0.5);
-  transition: all 0.2s ease;
+  transition: box-shadow 0.2s ease, background 0.2s ease;
   letter-spacing: 0.2px;
   user-select: none;
+  touch-action: none;
 }
 #zme-toggle-btn:hover {
-  transform: translateY(-2px);
   box-shadow: 0 6px 24px rgba(99,102,241,0.6);
 }
-#zme-toggle-btn:active {
-  transform: translateY(0);
+#zme-toggle-btn.zme-dragging {
+  cursor: grabbing;
+  opacity: 0.85;
+  box-shadow: 0 8px 28px rgba(99,102,241,0.55);
 }
 #zme-toggle-btn.zme-active {
   background: linear-gradient(135deg, #10b981, #059669);

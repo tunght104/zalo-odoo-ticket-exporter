@@ -5,6 +5,7 @@ import {
   STYLES_ID,
   CSS_CLASSES,
   COPY_FEEDBACK_DURATION_MS,
+  TOGGLE_BTN_TOP_KEY,
 } from "../../shared/constants";
 import { SIDEBAR_STYLES } from "./styles";
 import { ToastManager } from "./ToastManager";
@@ -132,8 +133,86 @@ export class SidebarManager {
     this.toggleBtn = document.createElement("button");
     this.toggleBtn.id = TOGGLE_BTN_ID;
     this.toggleBtn.innerHTML = `✓ Chọn tin nhắn`;
-    this.toggleBtn.addEventListener("click", () => this.toggleSelectMode());
+
+    // Load saved vertical position, then attach drag
+    chrome.storage.local.get([TOGGLE_BTN_TOP_KEY], (stored) => {
+      const savedTop = stored[TOGGLE_BTN_TOP_KEY] as number | undefined;
+      const defaultTop = Math.round(window.innerHeight * 0.3); // 30vh as fallback
+      this.applyBtnTop(savedTop ?? defaultTop);
+    });
+
+    this.attachVerticalDrag(this.toggleBtn);
     document.body.appendChild(this.toggleBtn);
+  }
+
+  /**
+   * Clamp and apply a top value to the toggle button.
+   */
+  private applyBtnTop(top: number): void {
+    if (!this.toggleBtn) return;
+    const btnHeight = this.toggleBtn.offsetHeight || 44;
+    const clamped = Math.max(8, Math.min(top, window.innerHeight - btnHeight - 8));
+    this.toggleBtn.style.top = `${clamped}px`;
+  }
+
+  /**
+   * Attach vertical-only drag behaviour to the toggle button.
+   *
+   * Logic:
+   *  - mousedown records start position.
+   *  - mousemove beyond DRAG_THRESHOLD px activates drag mode.
+   *  - mouseup: if drag mode  → save position; otherwise → treat as click.
+   */
+  private attachVerticalDrag(btn: HTMLButtonElement): void {
+    /** Pixels of movement required before we enter drag mode. */
+    const DRAG_THRESHOLD = 5;
+
+    let startY = 0;
+    let startTop = 0;
+    let isDragging = false;
+
+    const onMouseMove = (e: MouseEvent): void => {
+      const deltaY = e.clientY - startY;
+      if (!isDragging && Math.abs(deltaY) < DRAG_THRESHOLD) return;
+
+      // Enter drag mode on first significant movement
+      if (!isDragging) {
+        isDragging = true;
+        btn.classList.add(CSS_CLASSES.DRAGGING);
+      }
+
+      this.applyBtnTop(startTop + deltaY);
+    };
+
+    const onMouseUp = (): void => {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+
+      if (isDragging) {
+        btn.classList.remove(CSS_CLASSES.DRAGGING);
+        // Persist final position
+        const finalTop = parseInt(btn.style.top, 10);
+        chrome.storage.local.set({ [TOGGLE_BTN_TOP_KEY]: finalTop });
+      } else {
+        // No meaningful movement → treat as a regular click
+        this.toggleSelectMode();
+      }
+
+      isDragging = false;
+    };
+
+    btn.addEventListener("mousedown", (e: MouseEvent) => {
+      // Only respond to primary button
+      if (e.button !== 0) return;
+      e.preventDefault();
+
+      startY = e.clientY;
+      startTop = parseInt(btn.style.top, 10) || Math.round(window.innerHeight * 0.3);
+      isDragging = false;
+
+      document.addEventListener("mousemove", onMouseMove);
+      document.addEventListener("mouseup", onMouseUp);
+    });
   }
 
   // ── Sidebar DOM ─────────────────────────────────────────────────────────────
