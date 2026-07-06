@@ -9,7 +9,7 @@ export class MessageFormatter {
    * Format messages into a plain text conversation string for clipboard.
    */
   formatAsText(messages: SelectedMessage[], meLabel: string, customerLabel: string): string {
-    const sorted = [...messages].sort((a, b) => a.sortIndex - b.sortIndex);
+    const sorted = [...messages].sort((a, b) => a.selectedAt - b.selectedAt);
     return sorted
       .map((msg) => {
         const label = msg.senderType === "me" ? meLabel : customerLabel;
@@ -22,7 +22,7 @@ export class MessageFormatter {
    * Format messages into HTML for the sidebar preview panel.
    */
   formatAsHtml(messages: SelectedMessage[], meLabel: string, customerLabel: string): string {
-    const sorted = [...messages].sort((a, b) => a.sortIndex - b.sortIndex);
+    const sorted = [...messages].sort((a, b) => a.selectedAt - b.selectedAt);
     return sorted
       .map((msg) => {
         const isMe = msg.senderType === "me";

@@ -9,7 +9,7 @@ export interface SelectedMessage {
   /** Clean text content of the message */
   text: string;
   /** DOM-based sort index for maintaining conversation order */
-  sortIndex: number;
+  selectedAt: number;
 }
 
 /**

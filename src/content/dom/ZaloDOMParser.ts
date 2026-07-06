@@ -1,7 +1,6 @@
-import { ZALO_SELECTORS, SORT_INDEX_BLOCK_MULTIPLIER } from "../../shared/constants";
+import { ZALO_SELECTORS } from "../../shared/constants";
 
 /**
- * Parsed result from a Zalo chat item DOM element.
  */
 export interface ParsedChatItem {
   element: HTMLElement;
@@ -69,58 +68,6 @@ export class ZaloDOMParser {
     return `msg-${prefix}-${hash}`;
   }
 
-  /**
-   * Compute a sort index for maintaining conversation order.
-   *
-   * Strategy: Use the element's absolute pixel position within the scroll
-   * container. Virtual lists (like Zalo's) position items absolutely within
-   * a tall container — so `offsetTop` reflects the true position in the full
-   * conversation, not just the current viewport.
-   *
-   * Fallback: If we can't determine absolute position, use block-date
-   * hierarchy (block index × multiplier + item index).
-   */
-  getDomSortIndex(chatItem: HTMLElement): number {
-    // Strategy 1: Absolute position in scroll container
-    // Walk up to find the nearest scrollable ancestor with a large scrollHeight
-    const absoluteTop = this.getAbsoluteTop(chatItem);
-    if (absoluteTop !== null) {
-      return absoluteTop;
-    }
-
-    // Strategy 2: Fallback to block-date hierarchy
-    const blockDate = chatItem.closest(ZALO_SELECTORS.BLOCK_DATE);
-    if (!blockDate) return 0;
-
-    const allBlocks = Array.from(document.querySelectorAll(ZALO_SELECTORS.BLOCK_DATE));
-    const blockIndex = allBlocks.indexOf(blockDate as Element);
-
-    const itemsInBlock = Array.from(blockDate.querySelectorAll(ZALO_SELECTORS.CHAT_ITEMS.split(" ").pop()!));
-    const itemIndex = itemsInBlock.indexOf(chatItem);
-
-    return blockIndex * SORT_INDEX_BLOCK_MULTIPLIER + itemIndex;
-  }
-
-  /**
-   * Get the element's absolute top position within its scrollable container.
-   * Returns null if no suitable container is found.
-   */
-  private getAbsoluteTop(element: HTMLElement): number | null {
-    // Walk up to find a scrollable container (the chat message list)
-    let container: HTMLElement | null = element.parentElement;
-    while (container) {
-      // A scroll container typically has scrollHeight much larger than clientHeight
-      if (container.scrollHeight > container.clientHeight * 1.5) {
-        // Calculate element's position relative to this container
-        const containerRect = container.getBoundingClientRect();
-        const elementRect = element.getBoundingClientRect();
-        // Absolute position = visual offset from container top + how far we've scrolled
-        return (elementRect.top - containerRect.top) + container.scrollTop;
-      }
-      container = container.parentElement;
-    }
-    return null;
-  }
 
   /**
    * Get the current conversation identifier (URL-based).

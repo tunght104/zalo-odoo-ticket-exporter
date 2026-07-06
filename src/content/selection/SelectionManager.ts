@@ -44,7 +44,7 @@ export class SelectionManager {
         id: msgId,
         senderType: parsed.isMe ? "me" : "customer",
         text: parsed.text,
-        sortIndex: this.domParser.getDomSortIndex(chatItem),
+        selectedAt: Date.now(),
       });
       chatItem.classList.add(CSS_CLASSES.SELECTED);
       this.onChange(this.selectedMessages);
@@ -74,12 +74,6 @@ export class SelectionManager {
 
       if (selectedIds.has(msgId)) {
         item.classList.add(CSS_CLASSES.SELECTED);
-
-        // Re-calibrate the saved sortIndex with the element's updated coordinate
-        const matchedMsg = this.selectedMessages.find((m) => m.id === msgId);
-        if (matchedMsg) {
-          matchedMsg.sortIndex = this.domParser.getDomSortIndex(item);
-        }
       } else {
         item.classList.remove(CSS_CLASSES.SELECTED);
       }

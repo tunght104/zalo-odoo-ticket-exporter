@@ -35,8 +35,3 @@ export const OBSERVER_SETUP_DELAY_MS = 2000;
 export const TOAST_DURATION_MS = 2500;
 /** How long the "Copied!" feedback shows on the copy button */
 export const COPY_FEEDBACK_DURATION_MS = 2000;
-
-// ─── Sort Index ───────────────────────────────────────────────────────────────
-/** Multiplier to separate block-date groups in sort index calculation.
- *  Assumes fewer than this many messages per date block. */
-export const SORT_INDEX_BLOCK_MULTIPLIER = 10000;
