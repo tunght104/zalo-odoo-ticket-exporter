@@ -6,6 +6,7 @@ import { TOAST_ID, CSS_CLASSES, TOAST_DURATION_MS } from "../../shared/constants
  */
 export class ToastManager {
   private toast: HTMLElement;
+  private timeoutId: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     this.toast = this.createToast();
@@ -22,9 +23,13 @@ export class ToastManager {
   }
 
   show(message: string): void {
+    if (this.timeoutId) clearTimeout(this.timeoutId);
     this.toast.textContent = message;
     this.toast.classList.add(CSS_CLASSES.TOAST_SHOW);
-    setTimeout(() => this.toast.classList.remove(CSS_CLASSES.TOAST_SHOW), TOAST_DURATION_MS);
+    this.timeoutId = setTimeout(() => {
+      this.toast.classList.remove(CSS_CLASSES.TOAST_SHOW);
+      this.timeoutId = null;
+    }, TOAST_DURATION_MS);
   }
 
   destroy(): void {

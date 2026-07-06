@@ -1,6 +1,7 @@
 import { ZALO_SELECTORS } from "../../shared/constants";
 
 /**
+ * Structured data parsed from a single Zalo chat item DOM element.
  */
 export interface ParsedChatItem {
   element: HTMLElement;

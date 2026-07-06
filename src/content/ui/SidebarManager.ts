@@ -50,10 +50,7 @@ function createSidebarHTML(): string {
     </div>
 
     <div class="zme-preview-section" id="zme-preview">
-      <div class="zme-empty-state">
-        <div class="zme-empty-icon">☑️</div>
-        <div class="zme-empty-text">Bật chế độ chọn và tick<br/>vào các tin nhắn bạn muốn</div>
-      </div>
+      ${EMPTY_STATE_HTML}
     </div>
 
     <div class="zme-sidebar-footer">
@@ -64,6 +61,7 @@ function createSidebarHTML(): string {
   `;
 }
 
+// Single source of truth for the empty state markup — also used inside createSidebarHTML()
 const EMPTY_STATE_HTML = `
   <div class="zme-empty-state">
     <div class="zme-empty-icon">☑️</div>
@@ -261,9 +259,15 @@ export class SidebarManager {
       return;
     }
 
+    const phone = this.querySelector<HTMLInputElement>("#zme-label-phone")?.value.trim() ?? "";
+    // Basic phone validation: must be digits/+/spaces only, at least 7 chars if provided
+    if (phone && !/^[\d\s+()\-]{7,}$/.test(phone)) {
+      this.showToast("⚠️ Số điện thoại không hợp lệ!");
+      return;
+    }
+
     const description = this.querySelector<HTMLInputElement>("#zme-label-desc")?.value.trim() ?? "";
     const customerName = this.querySelector<HTMLInputElement>("#zme-label-customer")?.value.trim() || "customer";
-    const phone = this.querySelector<HTMLInputElement>("#zme-label-phone")?.value.trim() ?? "";
     const tagName = this.querySelector<HTMLInputElement>("#zme-label-tag")?.value.trim() || "Zalo";
     const meLabel = this.querySelector<HTMLInputElement>("#zme-label-me")?.value.trim() || "me";
     const conversationText = this.formatter.formatAsText(this.messages, meLabel, customerName);
@@ -321,6 +325,8 @@ export class SidebarManager {
       this.showCopySuccess();
     } catch {
       // Fallback: textarea trick for environments where Clipboard API is blocked
+      // Note: document.execCommand("copy") is deprecated but kept as a last resort.
+      console.warn("[ZME] Clipboard API unavailable — falling back to execCommand copy.");
       const ta = document.createElement("textarea");
       ta.value = text;
       ta.style.position = "fixed";

@@ -25,6 +25,10 @@ const ODOO_SOLVED_STAGE_ID = Number(import.meta.env.VITE_ODOO_SOLVED_STAGE_ID ??
 const JSONRPC_URL = `${ODOO_URL.replace(/\/+$/, "")}/jsonrpc`;
 const TIMEOUT_MS = 30_000;
 
+/** Auto-incrementing request ID — unique per call, safe for future concurrent use. */
+let _rpcIdCounter = 0;
+function nextRpcId(): number { return ++_rpcIdCounter; }
+
 // ─── JSON-RPC helper ────────────────────────────────────────────────────────────
 
 interface JsonRpcPayload {
@@ -77,7 +81,7 @@ async function jsonrpc(payload: JsonRpcPayload, id: number): Promise<unknown> {
 async function authenticate(email: string, apiKey: string): Promise<number> {
   const uid = await jsonrpc(
     { service: "common", method: "authenticate", args: [ODOO_DB, email, apiKey, {}] },
-    1
+    nextRpcId()
   );
   if (!uid || typeof uid !== "number") {
     throw new Error("Xác thực Odoo thất bại — kiểm tra lại email và API Key.");
@@ -114,7 +118,7 @@ async function findOrCreatePartner(
     uid, apiKey, "res.partner", "search_read",
     [[["name", "=", name]]],
     { fields: ["id"], limit: 1 },
-    10
+    nextRpcId()
   ) as { id: number }[];
 
   if (partners && partners.length > 0) {
@@ -125,7 +129,7 @@ async function findOrCreatePartner(
     uid, apiKey, "res.partner", "create",
     [{ name, phone }],
     {},
-    11
+    nextRpcId()
   );
   return partnerId as number;
 }
@@ -139,7 +143,7 @@ async function findOrCreateTag(
     uid, apiKey, "helpdesk.tag", "search_read",
     [[["name", "=", tagName]]],
     { fields: ["id"], limit: 1 },
-    20
+    nextRpcId()
   ) as { id: number }[];
 
   if (tags && tags.length > 0) {
@@ -150,7 +154,7 @@ async function findOrCreateTag(
     uid, apiKey, "helpdesk.tag", "create",
     [{ name: tagName }],
     {},
-    21
+    nextRpcId()
   );
   return tagId as number;
 }
@@ -173,7 +177,7 @@ async function createTicket(
       tag_ids: [[4, tagId]],
     }],
     {},
-    30
+    nextRpcId()
   );
 
   if (!ticketId || typeof ticketId !== "number") {
@@ -207,14 +211,14 @@ async function sendMailToTicket(
       message_type: "comment",
     }],
     {},
-    40
+    nextRpcId()
   ) as number;
 
   await executeKw(
     uid, apiKey, "mail.compose.message", "action_send_mail",
     [[wizardId]],
     {},
-    41
+    nextRpcId()
   );
 }
 
@@ -227,7 +231,7 @@ async function changeStageToSolved(
     uid, apiKey, "helpdesk.ticket", "write",
     [[ticketId], { stage_id: ODOO_SOLVED_STAGE_ID }],
     {},
-    50
+    nextRpcId()
   );
 }
 
