@@ -45,6 +45,10 @@ function createSidebarHTML(): string {
         <input class="zme-label-input" id="zme-label-phone" type="text" placeholder="Nhập số điện thoại..." />
       </div>
       <div class="zme-label-group">
+        <span class="zme-label-tag">Email:</span>
+        <input class="zme-label-input" id="zme-label-email" type="email" placeholder="Nhập email khách hàng..." />
+      </div>
+      <div class="zme-label-group">
         <span class="zme-label-tag">Tag:</span>
         <input class="zme-label-input" id="zme-label-tag" type="text" placeholder="Nhập tag..." />
       </div>
@@ -348,10 +352,11 @@ export class SidebarManager {
     const description = this.querySelector<HTMLInputElement>("#zme-label-desc")?.value.trim() ?? "";
     const customerName = this.querySelector<HTMLInputElement>("#zme-label-customer")?.value.trim() || "customer";
     const tagName = this.querySelector<HTMLInputElement>("#zme-label-tag")?.value.trim() || "Zalo";
+    const email = this.querySelector<HTMLInputElement>("#zme-label-email")?.value.trim() ?? "";
     const meLabel = this.querySelector<HTMLInputElement>("#zme-label-me")?.value.trim() || "me";
     const conversationText = this.formatter.formatAsText(this.messages, meLabel, customerName);
 
-    const payload: OdooTicketPayload = { title, description, customerName, phone, tagName, conversationText };
+    const payload: OdooTicketPayload = { title, description, customerName, phone, email, tagName, conversationText };
 
     // Set loading state
     if (this.odooBtn) {

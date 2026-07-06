@@ -33,6 +33,8 @@ export interface OdooTicketPayload {
   customerName: string;
   // Customer phone number
   phone: string;
+  // Customer email
+  email: string;
   // Tag name (helpdesk.tag)
   tagName: string;
   // Conversation text formatted as plain text
