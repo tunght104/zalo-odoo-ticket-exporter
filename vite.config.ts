@@ -17,7 +17,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        "zalo-content-script": "src/scripts/zalo-content-script.ts",
+        "zalo-content-script": "src/content/zalo-content-script.ts",
         main: "./index.html",
       },
       output: {

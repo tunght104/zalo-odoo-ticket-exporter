@@ -1,4 +1,4 @@
-var v=Object.defineProperty;var y=(s,e,t)=>e in s?v(s,e,{enumerable:!0,configurable:!0,writable:!0,value:t}):s[e]=t;var i=(s,e,t)=>y(s,typeof e!="symbol"?e+"":e,t);const h="zme-sidebar",u="zme-toggle-btn",w=`
+var T=Object.defineProperty;var w=(n,e,t)=>e in n?T(n,e,{enumerable:!0,configurable:!0,writable:!0,value:t}):n[e]=t;var a=(n,e,t)=>w(n,typeof e!="symbol"?e+"":e,t);const x="zme-sidebar",f="zme-toggle-btn",v="zme-toast",z="zme-styles",c={CHAT_ITEMS:".block-date .chat-item",CHAT_CONTENT:".chat-content",ME_CLASS:"me",BLOCK_DATE:".block-date"},l={SELECT_MODE:"zme-select-mode",SELECTED:"zme-selected",SIDEBAR_OPEN:"zme-open",TOGGLE_ACTIVE:"zme-active",COPIED:"zme-copied",TOAST_SHOW:"zme-show"},M=1500,I=2e3,L=2500,k=2e3,A=1e4;class B{getAllChatItems(){return document.querySelectorAll(c.CHAT_ITEMS)}extractCleanText(e){var s;let t=((s=e.innerText)==null?void 0:s.trim())??"";return t?(t=t.replace(/\n\d{1,2}:\d{2}[\s\S]*$/,""),t=t.replace(/\n\d{1,2}:[\s\S]*$/,""),t.trim()):""}parseChatItem(e){const t=e.querySelector(c.CHAT_CONTENT);if(!t)return null;const s=this.extractCleanText(t);return s?{element:e,text:s,isMe:e.classList.contains(c.ME_CLASS)}:null}generateMessageId(e,t){const s=e?"me":"cus",o=this.simpleHash(t);return`msg-${s}-${o}`}getDomSortIndex(e){const t=this.getAbsoluteTop(e);if(t!==null)return t;const s=e.closest(c.BLOCK_DATE);if(!s)return 0;const i=Array.from(document.querySelectorAll(c.BLOCK_DATE)).indexOf(s),p=Array.from(s.querySelectorAll(c.CHAT_ITEMS.split(" ").pop())).indexOf(e);return i*A+p}getAbsoluteTop(e){let t=e.parentElement;for(;t;){if(t.scrollHeight>t.clientHeight*1.5){const s=t.getBoundingClientRect();return e.getBoundingClientRect().top-s.top+t.scrollTop}t=t.parentElement}return null}getCurrentConversationKey(){return window.location.href}simpleHash(e){let t=0;for(let s=0;s<e.length;s++){const o=e.charCodeAt(s);t=(t<<5)-t+o,t|=0}return Math.abs(t).toString(36)}}class _{constructor(e,t){a(this,"selectedMessages",[]);a(this,"domParser");a(this,"onChange");this.domParser=e,this.onChange=t}toggle(e){const t=this.domParser.parseChatItem(e);if(!t)return!1;const s=this.domParser.generateMessageId(t.isMe,t.text);e.dataset.zmeId=s;const o=this.selectedMessages.findIndex(i=>i.id===s);return o>=0?(this.selectedMessages.splice(o,1),e.classList.remove(l.SELECTED),this.onChange(this.selectedMessages),!1):(this.selectedMessages.push({id:s,senderType:t.isMe?"me":"customer",text:t.text,sortIndex:this.domParser.getDomSortIndex(e)}),e.classList.add(l.SELECTED),this.onChange(this.selectedMessages),!0)}syncSelectionState(){const e=this.domParser.getAllChatItems(),t=new Set(this.selectedMessages.map(s=>s.id));e.forEach(s=>{const o=this.domParser.parseChatItem(s);if(!o)return;const i=this.domParser.generateMessageId(o.isMe,o.text);if(s.dataset.zmeId=i,t.has(i)){s.classList.add(l.SELECTED);const r=this.selectedMessages.find(p=>p.id===i);r&&(r.sortIndex=this.domParser.getDomSortIndex(s))}else s.classList.remove(l.SELECTED)})}clear(){this.selectedMessages=[],document.querySelectorAll(`.${l.SELECTED}`).forEach(e=>{e.classList.remove(l.SELECTED)}),this.onChange(this.selectedMessages)}getMessages(){return[...this.selectedMessages]}hasSelections(){return this.selectedMessages.length>0}}const O=`
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 /* ── Toggle Button ── */
@@ -240,8 +240,7 @@ var v=Object.defineProperty;var y=(s,e,t)=>e in s?v(s,e,{enumerable:!0,configura
   border-color: rgba(239,68,68,0.3);
 }
 
-/* ── Hover & Selection Effects (No DOM injection) ── */
-/* When select mode is active, make chat items clickable */
+/* ── Hover & Selection Effects (CSS-only, no DOM injection) ── */
 body.zme-select-mode .chat-item {
   cursor: pointer !important;
   transition: background-color 0.2s ease;
@@ -251,13 +250,11 @@ body.zme-select-mode .chat-item:hover {
   border-radius: 8px;
 }
 
-/* Selected state */
 .chat-item.zme-selected {
   background-color: rgba(99, 102, 241, 0.2) !important;
   border-radius: 8px;
 }
 
-/* Pseudo-element for the checkmark */
 .chat-item.zme-selected::after {
   content: '';
   position: absolute;
@@ -276,11 +273,11 @@ body.zme-select-mode .chat-item:hover {
   pointer-events: none;
 }
 
-/* "me" messages are right-aligned → checkmark on the left */
+/* "me" messages: checkmark on the left */
 .chat-item.me.zme-selected::after {
   left: -10px;
 }
-/* "customer" messages are left-aligned → checkmark on the right */
+/* "customer" messages: checkmark on the right */
 .chat-item:not(.me).zme-selected::after {
   right: -10px;
 }
@@ -309,57 +306,57 @@ body.zme-select-mode .chat-item:hover {
   transform: translateY(0);
   opacity: 1;
 }
-`;class k{constructor(e){i(this,"sidebar");i(this,"toggleBtn");i(this,"previewSection");i(this,"labelMeInput");i(this,"labelCustomerInput");i(this,"countEl");i(this,"copyBtn");i(this,"toast");i(this,"isOpen",!1);i(this,"messages",[]);i(this,"options");i(this,"isSelectModeActive",!1);this.options=e,this.injectStyles(),this.createToggleButton(),this.createSidebar(),this.createToast()}injectStyles(){if(document.getElementById("zme-styles"))return;const e=document.createElement("style");e.id="zme-styles",e.textContent=w,document.head.appendChild(e)}createToast(){this.toast=document.createElement("div"),this.toast.id="zme-toast",document.body.appendChild(this.toast)}showToast(e){this.toast.textContent=e,this.toast.classList.add("zme-show"),setTimeout(()=>this.toast.classList.remove("zme-show"),2500)}createToggleButton(){const e=document.getElementById(u);e&&e.remove(),this.toggleBtn=document.createElement("button"),this.toggleBtn.id=u,this.toggleBtn.innerHTML="✓ Chọn tin nhắn",this.toggleBtn.addEventListener("click",()=>this.toggleSelectMode()),document.body.appendChild(this.toggleBtn)}createSidebar(){const e=document.getElementById(h);e&&e.remove(),this.sidebar=document.createElement("div"),this.sidebar.id=h,this.sidebar.innerHTML=`
-      <div class="zme-sidebar-header">
-        <div>
-          <div class="zme-sidebar-title">💬 Hội thoại đã chọn</div>
-          <div class="zme-sidebar-count" id="zme-count">Chưa có tin nhắn nào</div>
-        </div>
-        <button class="zme-close-btn" id="zme-close-btn">×</button>
+`;class D{constructor(){a(this,"toast");this.toast=this.createToast()}createToast(){const e=document.getElementById(v);e&&e.remove();const t=document.createElement("div");return t.id=v,document.body.appendChild(t),t}show(e){this.toast.textContent=e,this.toast.classList.add(l.TOAST_SHOW),setTimeout(()=>this.toast.classList.remove(l.TOAST_SHOW),L)}destroy(){var e;(e=document.getElementById(v))==null||e.remove()}}class H{formatAsText(e,t,s){return[...e].sort((i,r)=>i.sortIndex-r.sortIndex).map(i=>`${i.senderType==="me"?t:s}: ${i.text}`).join(`
+`)}formatAsHtml(e,t,s){return[...e].sort((i,r)=>i.sortIndex-r.sortIndex).map(i=>{const r=i.senderType==="me",p=r?"zme-sender-me":"zme-sender-customer",S=r?t:s,C=this.escapeHtml(i.text);return`<div class="zme-preview-line"><span class="${p}">${S}</span>: ${C}</div>`}).join("")}escapeHtml(e){return e.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}}function P(){return`
+    <div class="zme-sidebar-header">
+      <div>
+        <div class="zme-sidebar-title">💬 Hội thoại đã chọn</div>
+        <div class="zme-sidebar-count" id="zme-count">Chưa có tin nhắn nào</div>
       </div>
+      <button class="zme-close-btn" id="zme-close-btn">×</button>
+    </div>
 
-      <div class="zme-label-section">
-        <div class="zme-label-group">
-          <span class="zme-label-tag">Tên của bạn:</span>
-          <input class="zme-label-input" id="zme-label-me" type="text" value="me" placeholder="Nhập tên đại diện cho bạn..." />
-        </div>
-        <div class="zme-label-group">
-          <span class="zme-label-tag">Tên khách hàng:</span>
-          <input class="zme-label-input" id="zme-label-customer" type="text" value="customer" placeholder="Nhập tên khách hàng..." />
-        </div>
-        <div class="zme-label-group">
-          <span class="zme-label-tag">Tiêu đề:</span>
-          <input class="zme-label-input" id="zme-label-title" type="text" placeholder="Nhập tiêu đề..." />
-        </div>
-        <div class="zme-label-group">
-          <span class="zme-label-tag">Mô tả:</span>
-          <input class="zme-label-input" id="zme-label-desc" type="text" placeholder="Nhập mô tả..." />
-        </div>
-        <div class="zme-label-group">
-          <span class="zme-label-tag">Số điện thoại:</span>
-          <input class="zme-label-input" id="zme-label-phone" type="text" placeholder="Nhập số điện thoại..." />
-        </div>
-        <div class="zme-label-group">
-          <span class="zme-label-tag">Tag:</span>
-          <input class="zme-label-input" id="zme-label-tag" type="text" placeholder="Nhập tag..." />
-        </div>
+    <div class="zme-label-section">
+      <div class="zme-label-group">
+        <span class="zme-label-tag">Tên của bạn:</span>
+        <input class="zme-label-input" id="zme-label-me" type="text" value="me" placeholder="Nhập tên đại diện cho bạn..." />
       </div>
+      <div class="zme-label-group">
+        <span class="zme-label-tag">Tên khách hàng:</span>
+        <input class="zme-label-input" id="zme-label-customer" type="text" value="customer" placeholder="Nhập tên khách hàng..." />
+      </div>
+      <div class="zme-label-group">
+        <span class="zme-label-tag">Tiêu đề:</span>
+        <input class="zme-label-input" id="zme-label-title" type="text" placeholder="Nhập tiêu đề..." />
+      </div>
+      <div class="zme-label-group">
+        <span class="zme-label-tag">Mô tả:</span>
+        <input class="zme-label-input" id="zme-label-desc" type="text" placeholder="Nhập mô tả..." />
+      </div>
+      <div class="zme-label-group">
+        <span class="zme-label-tag">Số điện thoại:</span>
+        <input class="zme-label-input" id="zme-label-phone" type="text" placeholder="Nhập số điện thoại..." />
+      </div>
+      <div class="zme-label-group">
+        <span class="zme-label-tag">Tag:</span>
+        <input class="zme-label-input" id="zme-label-tag" type="text" placeholder="Nhập tag..." />
+      </div>
+    </div>
 
-      <div class="zme-preview-section" id="zme-preview">
-        <div class="zme-empty-state">
-          <div class="zme-empty-icon">☑️</div>
-          <div class="zme-empty-text">Bật chế độ chọn và tick<br/>vào các tin nhắn bạn muốn</div>
-        </div>
+    <div class="zme-preview-section" id="zme-preview">
+      <div class="zme-empty-state">
+        <div class="zme-empty-icon">☑️</div>
+        <div class="zme-empty-text">Bật chế độ chọn và tick<br/>vào các tin nhắn bạn muốn</div>
       </div>
+    </div>
 
-      <div class="zme-sidebar-footer">
-        <button class="zme-btn zme-btn-copy" id="zme-copy-btn">📋 Copy</button>
-        <button class="zme-btn zme-btn-clear" id="zme-clear-btn">🗑 Xóa hết</button>
-      </div>
-    `,document.body.appendChild(this.sidebar),this.previewSection=this.sidebar.querySelector("#zme-preview"),this.labelMeInput=this.sidebar.querySelector("#zme-label-me"),this.labelCustomerInput=this.sidebar.querySelector("#zme-label-customer"),this.countEl=this.sidebar.querySelector("#zme-count"),this.copyBtn=this.sidebar.querySelector("#zme-copy-btn"),this.sidebar.querySelector("#zme-close-btn").addEventListener("click",()=>{this.closeSidebar()}),this.copyBtn.addEventListener("click",()=>this.copyToClipboard()),this.sidebar.querySelector("#zme-clear-btn").addEventListener("click",()=>{this.options.onClear(),this.updateMessages([]),this.showToast("Đã xóa hết tin nhắn đã chọn")}),this.labelMeInput.addEventListener("input",()=>this.renderPreview()),this.labelCustomerInput.addEventListener("input",()=>this.renderPreview())}toggleSelectMode(){this.isSelectModeActive=!this.isSelectModeActive,this.isSelectModeActive?(document.body.classList.add("zme-select-mode"),this.toggleBtn.classList.add("zme-active"),this.toggleBtn.innerHTML="✅ Đang chọn...",this.openSidebar()):(document.body.classList.remove("zme-select-mode"),this.toggleBtn.classList.remove("zme-active"),this.toggleBtn.innerHTML="✓ Chọn tin nhắn")}openSidebar(){this.isOpen=!0,this.sidebar.classList.add("zme-open")}closeSidebar(){this.isOpen=!1,this.sidebar.classList.remove("zme-open")}updateMessages(e){this.messages=[...e],this.renderPreview(),this.updateCount(),e.length>0&&!this.isOpen&&this.openSidebar()}updateCount(){const e=this.messages.length;this.countEl.textContent=e===0?"Chưa có tin nhắn nào":`${e} tin nhắn đã chọn`}renderPreview(){if(this.messages.length===0){this.previewSection.innerHTML=`
-        <div class="zme-empty-state">
-          <div class="zme-empty-icon">☑️</div>
-          <div class="zme-empty-text">Bật chế độ chọn và tick<br/>vào các tin nhắn bạn muốn</div>
-        </div>
-      `;return}const e=this.labelMeInput.value.trim()||"me",t=this.labelCustomerInput.value.trim()||"customer",o=[...this.messages].sort((n,a)=>n.timestamp-a.timestamp).map(n=>{const a=n.senderType==="me",m=a?"zme-sender-me":"zme-sender-customer",p=a?e:t,b=this.escapeHtml(n.text);return`<div class="zme-preview-line"><span class="${m}">${p}</span>: ${b}</div>`}).join("");this.previewSection.innerHTML=o}async copyToClipboard(){if(this.messages.length===0){this.showToast("Chưa có tin nhắn nào để copy!");return}const e=this.labelMeInput.value.trim()||"me",t=this.labelCustomerInput.value.trim()||"customer",o=[...this.messages].sort((n,a)=>n.timestamp-a.timestamp).map(n=>`${n.senderType==="me"?e:t}: ${n.text}`).join(`
-`);try{await navigator.clipboard.writeText(o),this.copyBtn.textContent="✅ Đã copy!",this.copyBtn.classList.add("zme-copied"),this.showToast("Đã copy hội thoại vào Clipboard!"),setTimeout(()=>{this.copyBtn.textContent="📋 Copy",this.copyBtn.classList.remove("zme-copied")},2e3)}catch{const n=document.createElement("textarea");n.value=o,n.style.position="fixed",n.style.opacity="0",document.body.appendChild(n),n.select(),document.execCommand("copy"),n.remove(),this.showToast("Đã copy hội thoại vào Clipboard!")}}destroy(){var e,t,r,o;(e=document.getElementById(h))==null||e.remove(),(t=document.getElementById(u))==null||t.remove(),(r=document.getElementById("zme-styles"))==null||r.remove(),(o=document.getElementById("zme-toast"))==null||o.remove(),document.body.classList.remove("zme-select-mode")}escapeHtml(e){return e.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}}let c=[],l=null,g="",d=null;function x(s){var t;let e=((t=s.innerText)==null?void 0:t.trim())??"";return e?(e=e.replace(/\n\d{1,2}:\d{2}[\s\S]*$/,""),e=e.replace(/\n\d{1,2}:[\s\S]*$/,""),e.trim()):""}function z(){return window.location.href}function C(){const s=document.querySelectorAll(".block-date .chat-item"),e=new Set(c.map(t=>t.id));s.forEach(t=>{const r=t.querySelector(".chat-content");if(!r)return;const o=x(r);if(!o)return;const a=`msg-${t.classList.contains("me")?"me":"cus"}-${o.substring(0,30).replace(/\s+/g,"")}`;t.dataset.zmeId=a,e.has(a)?t.classList.add("zme-selected"):t.classList.remove("zme-selected")})}function S(s){if(!document.body.classList.contains("zme-select-mode"))return;const e=s.target,t=e.closest(".chat-item");if(!t||e.closest("#zme-sidebar"))return;s.preventDefault(),s.stopPropagation();const r=t.querySelector(".chat-content");if(!r)return;const o=x(r);if(!o)return;const n=t.classList.contains("me"),a=n?"me":"customer",m=t.dataset.zmeId||`msg-${n?"me":"cus"}-${o.substring(0,30).replace(/\s+/g,"")}`,p=c.findIndex(b=>b.id===m);p>=0?(c.splice(p,1),t.classList.remove("zme-selected")):(c.push({id:m,senderType:a,text:o,timestamp:Date.now()}),t.classList.add("zme-selected")),l==null||l.updateMessages(c)}function f(){c=[],l==null||l.updateMessages([]),document.querySelectorAll(".zme-selected").forEach(s=>{s.classList.remove("zme-selected")})}function L(s){console.log("[ZME] Conversation changed:",s),f(),l==null||l.showToast("Đã chuyển cuộc trò chuyện — danh sách đã xóa")}function M(){let s=null;new MutationObserver(()=>{s&&cancelAnimationFrame(s),s=requestAnimationFrame(()=>{c.length>0&&C()})}).observe(document.body,{childList:!0,subtree:!0,attributes:!1})}function E(){d==null||d.disconnect();const s=()=>{const e=z();e!==g&&(g=e,L(e))};window.addEventListener("popstate",s),d=new MutationObserver(s),d.observe(document.body,{childList:!0,subtree:!1})}function T(){console.log("[ZME] Zalo Message Exporter v1.1 initializing (Event Delegation Mode)..."),document.body.addEventListener("click",S,{capture:!0}),l=new k({onClear:f}),g=z(),setTimeout(()=>{M(),E(),console.log("[ZME] Ready. Zero-DOM-Injection mode active.")},2e3)}setTimeout(T,1500);
+    <div class="zme-sidebar-footer">
+      <button class="zme-btn zme-btn-copy" id="zme-copy-btn">📋 Copy</button>
+      <button class="zme-btn zme-btn-clear" id="zme-clear-btn">🗑 Xóa hết</button>
+    </div>
+  `}const N=`
+  <div class="zme-empty-state">
+    <div class="zme-empty-icon">☑️</div>
+    <div class="zme-empty-text">Bật chế độ chọn và tick<br/>vào các tin nhắn bạn muốn</div>
+  </div>
+`;class R{constructor(e){a(this,"sidebar",null);a(this,"toggleBtn",null);a(this,"previewSection",null);a(this,"labelMeInput",null);a(this,"labelCustomerInput",null);a(this,"countEl",null);a(this,"copyBtn",null);a(this,"isOpen",!1);a(this,"_isSelectModeActive",!1);a(this,"messages",[]);a(this,"options");a(this,"toast");a(this,"formatter");this.options=e,this.toast=new D,this.formatter=new H,this.injectStyles(),this.createToggleButton(),this.createSidebar()}get isSelectModeActive(){return this._isSelectModeActive}injectStyles(){if(document.getElementById(z))return;const e=document.createElement("style");e.id=z,e.textContent=O,document.head.appendChild(e)}createToggleButton(){const e=document.getElementById(f);e&&e.remove(),this.toggleBtn=document.createElement("button"),this.toggleBtn.id=f,this.toggleBtn.innerHTML="✓ Chọn tin nhắn",this.toggleBtn.addEventListener("click",()=>this.toggleSelectMode()),document.body.appendChild(this.toggleBtn)}createSidebar(){var t,s,o,i,r;const e=document.getElementById(x);e&&e.remove(),this.sidebar=document.createElement("div"),this.sidebar.id=x,this.sidebar.innerHTML=P(),document.body.appendChild(this.sidebar),this.previewSection=this.querySelector("#zme-preview"),this.labelMeInput=this.querySelector("#zme-label-me"),this.labelCustomerInput=this.querySelector("#zme-label-customer"),this.countEl=this.querySelector("#zme-count"),this.copyBtn=this.querySelector("#zme-copy-btn"),(t=this.querySelector("#zme-close-btn"))==null||t.addEventListener("click",()=>this.closeSidebar()),(s=this.copyBtn)==null||s.addEventListener("click",()=>this.copyToClipboard()),(o=this.querySelector("#zme-clear-btn"))==null||o.addEventListener("click",()=>{this.options.onClear(),this.updateMessages([]),this.showToast("Đã xóa hết tin nhắn đã chọn")}),(i=this.labelMeInput)==null||i.addEventListener("input",()=>this.renderPreview()),(r=this.labelCustomerInput)==null||r.addEventListener("input",()=>this.renderPreview())}querySelector(e){var t;return((t=this.sidebar)==null?void 0:t.querySelector(e))??null}toggleSelectMode(){var e,t;this._isSelectModeActive=!this._isSelectModeActive,this._isSelectModeActive?(document.body.classList.add(l.SELECT_MODE),(e=this.toggleBtn)==null||e.classList.add(l.TOGGLE_ACTIVE),this.toggleBtn&&(this.toggleBtn.innerHTML="✅ Đang chọn..."),this.openSidebar()):(document.body.classList.remove(l.SELECT_MODE),(t=this.toggleBtn)==null||t.classList.remove(l.TOGGLE_ACTIVE),this.toggleBtn&&(this.toggleBtn.innerHTML="✓ Chọn tin nhắn"))}openSidebar(){var e;this.isOpen=!0,(e=this.sidebar)==null||e.classList.add(l.SIDEBAR_OPEN)}closeSidebar(){var e;this.isOpen=!1,(e=this.sidebar)==null||e.classList.remove(l.SIDEBAR_OPEN)}updateMessages(e){this.messages=[...e],this.renderPreview(),this.updateCount(),e.length>0&&!this.isOpen&&this.openSidebar()}updateCount(){if(!this.countEl)return;const e=this.messages.length;this.countEl.textContent=e===0?"Chưa có tin nhắn nào":`${e} tin nhắn đã chọn`}renderPreview(){var s,o;if(!this.previewSection)return;if(this.messages.length===0){this.previewSection.innerHTML=N;return}const e=((s=this.labelMeInput)==null?void 0:s.value.trim())||"me",t=((o=this.labelCustomerInput)==null?void 0:o.value.trim())||"customer";this.previewSection.innerHTML=this.formatter.formatAsHtml(this.messages,e,t)}async copyToClipboard(){var o,i;if(this.messages.length===0){this.showToast("Chưa có tin nhắn nào để copy!");return}const e=((o=this.labelMeInput)==null?void 0:o.value.trim())||"me",t=((i=this.labelCustomerInput)==null?void 0:i.value.trim())||"customer",s=this.formatter.formatAsText(this.messages,e,t);try{await navigator.clipboard.writeText(s),this.showCopySuccess()}catch{const r=document.createElement("textarea");r.value=s,r.style.position="fixed",r.style.opacity="0",document.body.appendChild(r),r.select(),document.execCommand("copy"),r.remove(),this.showCopySuccess()}}showCopySuccess(){this.copyBtn&&(this.copyBtn.textContent="✅ Đã copy!",this.copyBtn.classList.add(l.COPIED),setTimeout(()=>{this.copyBtn&&(this.copyBtn.textContent="📋 Copy",this.copyBtn.classList.remove(l.COPIED))},k)),this.showToast("Đã copy hội thoại vào Clipboard!")}showToast(e){this.toast.show(e)}destroy(){var e,t,s;(e=document.getElementById(x))==null||e.remove(),(t=document.getElementById(f))==null||t.remove(),(s=document.getElementById(z))==null||s.remove(),document.body.classList.remove(l.SELECT_MODE),this.toast.destroy()}}let b,d,g,y="",m=null,h=null,u=null;function q(n){if(!document.body.classList.contains(l.SELECT_MODE))return;const e=n.target,t=e.closest(".chat-item");t&&(e.closest("#zme-sidebar")||(n.preventDefault(),n.stopPropagation(),d.toggle(t),g.updateMessages(d.getMessages())))}function E(){d.clear(),g.updateMessages([])}function Y(n){console.log("[ZME] Conversation changed:",n),E(),g.showToast("Đã chuyển cuộc trò chuyện — danh sách đã xóa")}function $(){m==null||m.disconnect();let n=null;m=new MutationObserver(()=>{n&&cancelAnimationFrame(n),n=requestAnimationFrame(()=>{d.hasSelections()&&d.syncSelectionState()})}),m.observe(document.body,{childList:!0,subtree:!0,attributes:!1})}function K(){h==null||h.disconnect(),u&&window.removeEventListener("popstate",u);const n=()=>{const e=b.getCurrentConversationKey();e!==y&&(y=e,Y(e))};u=n,window.addEventListener("popstate",u),h=new MutationObserver(n),h.observe(document.body,{childList:!0,subtree:!1})}function G(n){}function j(){console.log("[ZME] Zalo Message Exporter v2.0 initializing..."),b=new B,d=new _(b,G),g=new R({onClear:E}),document.body.addEventListener("click",q,{capture:!0}),y=b.getCurrentConversationKey(),setTimeout(()=>{$(),K(),console.log("[ZME] Ready. Modular architecture active.")},I)}setTimeout(j,M);
