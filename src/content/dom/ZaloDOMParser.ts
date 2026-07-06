@@ -68,11 +68,25 @@ export class ZaloDOMParser {
     return `msg-${prefix}-${hash}`;
   }
 
-
-  /**
-   * Get the current conversation identifier (URL-based).
-   */
   getCurrentConversationKey(): string {
+    // Find the selected user/group in the left column
+    const selectedItem = document.querySelector(".conv-item.selected");
+    if (selectedItem) {
+      // Try to get the unique ID of that person
+      const msgItem = selectedItem.closest(".msg-item");
+      if (msgItem) {
+        const id = msgItem.getAttribute("anim-data-id");
+        if (id) return id;
+      }
+
+      // Fallback: Get the name of that person
+      const nameEl = selectedItem.querySelector(".conv-item-title__name");
+      if (nameEl) {
+        return nameEl.textContent || window.location.href;
+      }
+    }
+
+    // If not found, fallback to URL
     return window.location.href;
   }
 

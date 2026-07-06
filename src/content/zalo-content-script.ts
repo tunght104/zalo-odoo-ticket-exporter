@@ -11,11 +11,7 @@ let selectionManager: SelectionManager;
 let sidebar: SidebarManager;
 let currentConversationKey = "";
 
-// ─── Observer References (for cleanup) ────────────────────────────────────────
-
 let messageAreaObserver: MutationObserver | null = null;
-let navigationObserver: MutationObserver | null = null;
-let popstateHandler: (() => void) | null = null;
 
 // ─── Click Handler (Event Delegation) ─────────────────────────────────────────
 
@@ -75,6 +71,14 @@ function watchMessageArea(): void {
   messageAreaObserver = new MutationObserver(() => {
     if (rafId) cancelAnimationFrame(rafId);
     rafId = requestAnimationFrame(() => {
+      // 1. Check for conversation change
+      const newKey = domParser.getCurrentConversationKey();
+      if (newKey !== currentConversationKey) {
+        currentConversationKey = newKey;
+        onConversationChange(newKey);
+      }
+
+      // 2. Sync selection visual state
       if (selectionManager.hasSelections()) {
         selectionManager.syncSelectionState();
       }
@@ -88,34 +92,6 @@ function watchMessageArea(): void {
   });
 }
 
-/**
- * Watch for navigation changes (SPA URL changes) to clear selections
- * when the user switches conversations.
- */
-function watchNavigation(): void {
-  // Cleanup previous listeners
-  navigationObserver?.disconnect();
-  if (popstateHandler) {
-    window.removeEventListener("popstate", popstateHandler);
-  }
-
-  const checkUrlChange = (): void => {
-    const newKey = domParser.getCurrentConversationKey();
-    if (newKey !== currentConversationKey) {
-      currentConversationKey = newKey;
-      onConversationChange(newKey);
-    }
-  };
-
-  popstateHandler = checkUrlChange;
-  window.addEventListener("popstate", popstateHandler);
-
-  navigationObserver = new MutationObserver(checkUrlChange);
-  navigationObserver.observe(document.body, {
-    childList: true,
-    subtree: false,
-  });
-}
 
 // ─── Bootstrap ────────────────────────────────────────────────────────────────
 
@@ -143,7 +119,6 @@ function init(): void {
   // Delay observer setup to let Zalo's chat area fully render
   setTimeout(() => {
     watchMessageArea();
-    watchNavigation();
     console.log("[ZME] Ready. Modular architecture active.");
   }, OBSERVER_SETUP_DELAY_MS);
 }
