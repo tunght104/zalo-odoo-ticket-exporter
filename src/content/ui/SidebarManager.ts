@@ -1,4 +1,4 @@
-import { SelectedMessage, SidebarOptions } from "../../shared/types";
+import { SelectedMessage, SidebarOptions, OdooTicketPayload, OdooTicketResult } from "../../shared/types";
 import {
   SIDEBAR_ID,
   TOGGLE_BTN_ID,
@@ -58,6 +58,7 @@ function createSidebarHTML(): string {
 
     <div class="zme-sidebar-footer">
       <button class="zme-btn zme-btn-copy" id="zme-copy-btn">📋 Copy</button>
+      <button class="zme-btn zme-btn-odoo" id="zme-odoo-btn">🎫 Tạo Ticket</button>
       <button class="zme-btn zme-btn-clear" id="zme-clear-btn">🗑 Xóa hết</button>
     </div>
   `;
@@ -97,6 +98,7 @@ export class SidebarManager {
   private readonly options: SidebarOptions;
   private readonly toast: ToastManager;
   private readonly formatter: MessageFormatter;
+  private odooBtn: HTMLButtonElement | null = null;
 
   constructor(options: SidebarOptions) {
     this.options = options;
@@ -159,6 +161,9 @@ export class SidebarManager {
       ?.addEventListener("click", () => this.closeSidebar());
 
     this.copyBtn?.addEventListener("click", () => this.copyToClipboard());
+
+    this.odooBtn = this.querySelector<HTMLButtonElement>("#zme-odoo-btn");
+    this.odooBtn?.addEventListener("click", () => this.createOdooTicket());
 
     this.querySelector<HTMLButtonElement>("#zme-clear-btn")
       ?.addEventListener("click", () => {
@@ -239,6 +244,63 @@ export class SidebarManager {
       this.messages,
       meLabel,
       customerLabel
+    );
+  }
+
+  // ── Odoo Ticket ─────────────────────────────────────────────────────────────
+
+  private async createOdooTicket(): Promise<void> {
+    if (this.messages.length === 0) {
+      this.showToast("⚠️ Chưa có tin nhắn nào để tạo ticket!");
+      return;
+    }
+
+    const title = this.querySelector<HTMLInputElement>("#zme-label-title")?.value.trim() ?? "";
+    if (!title) {
+      this.showToast("⚠️ Vui lòng nhập Tiêu đề trước khi tạo ticket!");
+      return;
+    }
+
+    const description = this.querySelector<HTMLInputElement>("#zme-label-desc")?.value.trim() ?? "";
+    const customerName = this.querySelector<HTMLInputElement>("#zme-label-customer")?.value.trim() || "customer";
+    const phone = this.querySelector<HTMLInputElement>("#zme-label-phone")?.value.trim() ?? "";
+    const tagName = this.querySelector<HTMLInputElement>("#zme-label-tag")?.value.trim() || "Zalo";
+    const meLabel = this.querySelector<HTMLInputElement>("#zme-label-me")?.value.trim() || "me";
+    const conversationText = this.formatter.formatAsText(this.messages, meLabel, customerName);
+
+    const payload: OdooTicketPayload = { title, description, customerName, phone, tagName, conversationText };
+
+    // Set loading state
+    if (this.odooBtn) {
+      this.odooBtn.disabled = true;
+      this.odooBtn.textContent = "⏳ Đang tạo...";
+    }
+
+    chrome.runtime.sendMessage(
+      { type: "CREATE_ODOO_TICKET", payload },
+      (result: OdooTicketResult) => {
+        // Reset button
+        if (this.odooBtn) {
+          this.odooBtn.disabled = false;
+          this.odooBtn.textContent = "🎫 Tạo Ticket";
+        }
+
+        if (!result) {
+          this.showToast("❌ Không nhận được phản hồi từ extension. Hãy thử reload trang.");
+          return;
+        }
+
+        if (!result.success) {
+          if (result.error === "NOT_LOGGED_IN") {
+            this.showToast("⚠️ Vui lòng đăng nhập Odoo trong popup extension trước!");
+          } else {
+            this.showToast(`❌ Lỗi: ${result.error ?? "Không xác định"}`);
+          }
+          return;
+        }
+
+        this.showToast(`✅ Đã tạo ticket #${result.ticketId} thành công!`);
+      }
     );
   }
 

@@ -17,6 +17,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
+        "service-worker": "src/background/service-worker.ts",
         "zalo-content-script": "src/content/zalo-content-script.ts",
         main: "./index.html",
       },

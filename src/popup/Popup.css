@@ -1,125 +1,261 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  width: 280px;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #0f0f13;
-  color: #e8e8f0;
-}
+/* ─── Base ─────────────────────────────────────────────────────────────────── */
 
 .popup-container {
+  width: 320px;
+  min-height: 200px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
+/* ─── Header ────────────────────────────────────────────────────────────────── */
+
 .popup-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 20px 20px 16px;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid #1e293b;
 }
 
 .popup-logo {
   font-size: 28px;
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-  flex-shrink: 0;
+  line-height: 1;
 }
 
 .popup-title {
+  margin: 0;
   font-size: 16px;
   font-weight: 700;
-  color: #ffffff;
+  color: #f1f5f9;
   letter-spacing: -0.3px;
 }
 
 .popup-subtitle {
+  margin: 2px 0 0;
   font-size: 11px;
-  color: #8b8ba7;
+  color: #64748b;
+}
+
+/* ─── Section ───────────────────────────────────────────────────────────────── */
+
+.popup-section {
+  padding: 12px 16px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+/* ─── Auth status (logged in) ───────────────────────────────────────────────── */
+
+.auth-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #0f2a1a;
+  border: 1px solid #166534;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.auth-status-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.auth-status-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.auth-status-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4ade80;
+}
+
+.auth-status-email {
+  font-size: 11px;
+  color: #86efac;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-relogin {
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid #166534;
+  color: #4ade80;
+  border-radius: 6px;
+  font-size: 11px;
+  padding: 4px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-relogin:hover {
+  background: #166534;
+  color: #f0fdf4;
+}
+
+/* ─── Auth form (not logged in) ─────────────────────────────────────────────── */
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-hint-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #334155;
+  color: #94a3b8;
+  font-size: 9px;
+  text-decoration: none;
+  font-weight: 700;
+  transition: background 0.15s;
+}
+
+.form-hint-link:hover {
+  background: #6366f1;
+  color: #fff;
+}
+
+.form-input {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  color: #e2e8f0;
+  font-size: 12px;
+  padding: 7px 10px;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  border-color: #6366f1;
+}
+
+.form-input::placeholder {
+  color: #475569;
+}
+
+.form-error {
+  font-size: 11px;
+  color: #f87171;
+  background: #1f0a0a;
+  border: 1px solid #7f1d1d;
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+.btn-login {
+  background: #6366f1;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
   margin-top: 2px;
 }
 
-.popup-body {
-  padding: 16px 20px;
-  background: #0f0f13;
+.btn-login:hover:not(:disabled) {
+  background: #4f46e5;
 }
+
+.btn-login:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ─── Instructions ──────────────────────────────────────────────────────────── */
 
 .popup-instruction {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .step {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  font-size: 12.5px;
-  color: #b0b0c8;
-  line-height: 1.5;
+  gap: 8px;
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.4;
 }
 
 .step-number {
-  min-width: 22px;
-  height: 22px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  font-size: 11px;
+  background: #1e293b;
+  color: #6366f1;
+  font-size: 10px;
   font-weight: 700;
-  color: white;
   flex-shrink: 0;
   margin-top: 1px;
 }
 
 .step strong {
-  color: #e8e8f0;
-  font-weight: 600;
+  color: #e2e8f0;
 }
 
+/* ─── Footer ────────────────────────────────────────────────────────────────── */
+
 .popup-footer {
-  padding: 12px 20px 16px;
-  background: #0f0f13;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 10px 16px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .popup-link {
-  display: block;
-  text-align: center;
-  padding: 9px 16px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: white;
+  font-size: 11px;
+  color: #6366f1;
   text-decoration: none;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
-  transition: opacity 0.2s, transform 0.1s;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+  transition: color 0.15s;
 }
 
 .popup-link:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-.popup-link:active {
-  transform: translateY(0);
+  color: #a5b4fc;
 }

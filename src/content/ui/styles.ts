@@ -211,6 +211,7 @@ export const SIDEBAR_STYLES = `
   display: flex;
   gap: 8px;
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 .zme-btn {
   flex: 1;
@@ -245,6 +246,21 @@ export const SIDEBAR_STYLES = `
   background: rgba(239,68,68,0.15);
   color: #f87171;
   border-color: rgba(239,68,68,0.3);
+}
+.zme-btn-odoo {
+  background: linear-gradient(135deg, #6d28d9, #7c3aed);
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(109,40,217,0.35);
+  flex: 1 1 100%;
+}
+.zme-btn-odoo:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+.zme-btn-odoo:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* ── Hover & Selection Effects (CSS-only, no DOM injection) ── */

@@ -6,6 +6,10 @@
   "action": {
     "default_popup": "index.html"
   },
+  "background": {
+    "service_worker": "service-worker.js",
+    "type": "module"
+  },
   "content_scripts": [
     {
       "matches": ["https://chat.zalo.me/*"],
@@ -21,6 +25,7 @@
     "clipboardWrite"
   ],
   "host_permissions": [
-    "https://chat.zalo.me/*"
+    "https://chat.zalo.me/*",
+    "https://hrm.mindx.edu.vn/*"
   ]
 }
