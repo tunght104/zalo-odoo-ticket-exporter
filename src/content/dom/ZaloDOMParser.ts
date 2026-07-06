@@ -25,6 +25,13 @@ export class ZaloDOMParser {
    * Removes Zalo's timestamp suffix and reactions.
    */
   extractCleanText(chatContent: HTMLElement): string {
+    // 1. Try to target only the text content container to avoid quotes/reactions
+    const textEl = chatContent.querySelector('[data-component="message-text-content"]');
+    if (textEl) {
+      return (textEl as HTMLElement).innerText?.trim() ?? "";
+    }
+
+    // 2. Fallback to extracting from the entire chatContent if specific container is not found
     let text = chatContent.innerText?.trim() ?? "";
     if (!text) return "";
 
