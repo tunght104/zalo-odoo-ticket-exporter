@@ -156,6 +156,40 @@ export const SIDEBAR_STYLES = `
 #zme-label-me { border-left: 2px solid #6366f1; }
 #zme-label-customer { border-left: 2px solid #10b981; }
 
+.zme-solved-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(99,102,241,0.25);
+  background: rgba(99,102,241,0.07);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+.zme-solved-toggle:hover {
+  background: rgba(99,102,241,0.13);
+  border-color: rgba(99,102,241,0.45);
+}
+.zme-solved-toggle input[type="checkbox"] {
+  cursor: pointer;
+  accent-color: #6366f1;
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+.zme-solved-toggle span {
+  font-size: 12px;
+  color: #c8c8e0;
+  line-height: 1.3;
+}
+.zme-solved-toggle span strong {
+  color: #a5b4fc;
+  font-weight: 600;
+}
+
 /* ── Message Preview ── */
 .zme-preview-section {
   flex: 1;

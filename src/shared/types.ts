@@ -35,10 +35,12 @@ export interface OdooTicketPayload {
   phone: string;
   // Customer email
   email: string;
-  // Tag name (helpdesk.tag)
-  tagName: string;
+  // List of tag names (helpdesk.tag)
+  tagNames: string[];
   // Conversation text formatted as plain text
   conversationText: string;
+  // Whether to mark the ticket as solved or in progress
+  markAsSolved: boolean;
 }
 
 /**

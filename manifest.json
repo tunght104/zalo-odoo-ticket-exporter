@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Zalo Message Exporter",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "description": "Chọn và xuất tin nhắn Zalo theo định dạng hội thoại",
   "action": {
     "default_popup": "index.html"

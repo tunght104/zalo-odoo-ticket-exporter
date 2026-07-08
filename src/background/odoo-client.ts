@@ -21,6 +21,7 @@ const ODOO_URL = (import.meta.env.VITE_ODOO_URL as string) || "https://hrm.mindx
 const ODOO_DB = (import.meta.env.VITE_ODOO_DB as string) || "mindxhrm";
 const ODOO_TEAM_ID = Number(import.meta.env.VITE_ODOO_TEAM_ID ?? 1);
 const ODOO_SOLVED_STAGE_ID = Number(import.meta.env.VITE_ODOO_SOLVED_STAGE_ID ?? 4);
+const ODOO_IN_PROGRESS_STAGE_ID = Number(import.meta.env.VITE_ODOO_IN_PROGRESS_STAGE_ID ?? 3);
 
 const JSONRPC_URL = `${ODOO_URL.replace(/\/+$/, "")}/jsonrpc`;
 const TIMEOUT_MS = 30_000;
@@ -135,29 +136,34 @@ async function findOrCreatePartner(
   return partnerId as number;
 }
 
-async function findOrCreateTag(
+async function findOrCreateTags(
   uid: number,
   apiKey: string,
-  tagName: string
-): Promise<number> {
-  const tags = await executeKw(
-    uid, apiKey, "helpdesk.tag", "search_read",
-    [[["name", "=", tagName]]],
-    { fields: ["id"], limit: 1 },
-    nextRpcId()
-  ) as { id: number }[];
+  tagNames: string[]
+): Promise<number[]> {
+  const tagIds = await Promise.all(
+    tagNames.map(async (tagName) => {
+      const tags = await executeKw(
+        uid, apiKey, "helpdesk.tag", "search_read",
+        [[["name", "ilike", tagName]]],
+        { fields: ["id"], limit: 1 },
+        nextRpcId()
+      ) as { id: number }[];
 
-  if (tags && tags.length > 0) {
-    return tags[0].id;
-  }
+      if (tags && tags.length > 0) {
+        return tags[0].id;
+      }
 
-  const tagId = await executeKw(
-    uid, apiKey, "helpdesk.tag", "create",
-    [{ name: tagName }],
-    {},
-    nextRpcId()
+      const tagId = await executeKw(
+        uid, apiKey, "helpdesk.tag", "create",
+        [{ name: tagName }],
+        {},
+        nextRpcId()
+      );
+      return tagId as number;
+    })
   );
-  return tagId as number;
+  return tagIds;
 }
 
 async function createTicket(
@@ -166,7 +172,7 @@ async function createTicket(
   title: string,
   description: string,
   partnerId: number,
-  tagId: number,
+  tagIds: number[],
   partnerEmail: string
 ): Promise<number> {
   const ticketId = await executeKw(
@@ -177,7 +183,7 @@ async function createTicket(
       partner_id: partnerId,
       partner_email: partnerEmail,
       team_id: ODOO_TEAM_ID,
-      tag_ids: [[4, tagId]],
+      tag_ids: tagIds.map(id => [4, id]),
     }],
     {},
     nextRpcId()
@@ -238,6 +244,19 @@ async function changeStageToSolved(
   );
 }
 
+async function changeStageToInProgress(
+  uid: number,
+  apiKey: string,
+  ticketId: number
+): Promise<void> {
+  await executeKw(
+    uid, apiKey, "helpdesk.ticket", "write",
+    [[ticketId], { stage_id: ODOO_IN_PROGRESS_STAGE_ID }],
+    {},
+    nextRpcId()
+  );
+}
+
 // ─── Exported handler ────────────────────────────────────────────────────────────
 
 export async function handleCreateOdooTicket(payload: OdooTicketPayload): Promise<OdooTicketResult> {
@@ -254,9 +273,9 @@ export async function handleCreateOdooTicket(payload: OdooTicketPayload): Promis
     const uid = await authenticate(odooEmail, odooApiKey);
 
     // 3. Resolve partner & tag (can run in parallel)
-    const [partnerId, tagId] = await Promise.all([
+    const [partnerId, tagIds] = await Promise.all([
       findOrCreatePartner(uid, odooApiKey, payload.customerName, payload.phone, payload.email),
-      findOrCreateTag(uid, odooApiKey, payload.tagName),
+      findOrCreateTags(uid, odooApiKey, payload.tagNames),
     ]);
 
     // 4. Create ticket — MUST succeed before steps 5 & 6
@@ -265,15 +284,19 @@ export async function handleCreateOdooTicket(payload: OdooTicketPayload): Promis
       payload.title,
       payload.description,
       partnerId,
-      tagId,
+      tagIds,
       payload.email
     );
 
     // 5. Send mail with conversation text (ticket already exists at this point)
     await sendMailToTicket(uid, odooApiKey, ticketId, payload.conversationText);
 
-    // 6. Change stage to Solved
-    await changeStageToSolved(uid, odooApiKey, ticketId);
+    // 6. Change stage based on payload flag
+    if (payload.markAsSolved) {
+      await changeStageToSolved(uid, odooApiKey, ticketId);
+    } else {
+      await changeStageToInProgress(uid, odooApiKey, ticketId);
+    }
 
     return { success: true, ticketId };
   } catch (err) {

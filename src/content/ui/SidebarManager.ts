@@ -50,7 +50,7 @@ function createSidebarHTML(): string {
       </div>
       <div class="zme-label-group">
         <span class="zme-label-tag">Tag:</span>
-        <input class="zme-label-input" id="zme-label-tag" type="text" placeholder="Nhập tag..." />
+        <input class="zme-label-input" id="zme-label-tag" type="text" placeholder="Nhập các tag cách nhau bởi dấu phẩy..." />
       </div>
     </div>
 
@@ -59,8 +59,12 @@ function createSidebarHTML(): string {
     </div>
 
     <div class="zme-sidebar-footer">
-      <button class="zme-btn zme-btn-copy" id="zme-copy-btn">📋 Copy</button>
+      <label class="zme-solved-toggle">
+        <input type="checkbox" id="zme-label-solved" checked />
+        <span>Đánh dấu là <strong>Đã giải quyết</strong> (Solved)</span>
+      </label>
       <button class="zme-btn zme-btn-odoo" id="zme-odoo-btn">🎫 Tạo Ticket</button>
+      <button class="zme-btn zme-btn-copy" id="zme-copy-btn">📋 Copy</button>
       <button class="zme-btn zme-btn-clear" id="zme-clear-btn">🗑 Xóa hết</button>
     </div>
   `;
@@ -351,12 +355,17 @@ export class SidebarManager {
 
     const description = this.querySelector<HTMLInputElement>("#zme-label-desc")?.value.trim() ?? "";
     const customerName = this.querySelector<HTMLInputElement>("#zme-label-customer")?.value.trim() || "customer";
-    const tagName = this.querySelector<HTMLInputElement>("#zme-label-tag")?.value.trim() || "Zalo";
-    const email = this.querySelector<HTMLInputElement>("#zme-label-email")?.value.trim() ?? "";
+    const tagString = this.querySelector<HTMLInputElement>("#zme-label-tag")?.value.trim() || "Zalo";
+    const tagNames = tagString.split(",").map(t => t.trim()).filter(t => t.length > 0);
     const meLabel = this.querySelector<HTMLInputElement>("#zme-label-me")?.value.trim() || "me";
     const conversationText = this.formatter.formatAsText(this.messages, meLabel, customerName);
+    const markAsSolved = this.querySelector<HTMLInputElement>("#zme-label-solved")?.checked ?? true;
 
-    const payload: OdooTicketPayload = { title, description, customerName, phone, email, tagName, conversationText };
+    // We pass an empty string for email as it is not collected in the sidebar form yet, 
+    // but the payload expects it.
+    const email = this.querySelector<HTMLInputElement>("#zme-label-email")?.value.trim() ?? "";
+
+    const payload: OdooTicketPayload = { title, description, customerName, phone, email, tagNames, conversationText, markAsSolved };
 
     // Set loading state
     if (this.odooBtn) {
