@@ -34,6 +34,18 @@ function createSidebarHTML(): string {
         <datalist id="zme-customer-names"></datalist>
       </div>
       <div class="zme-label-group">
+        <span class="zme-label-tag">Team xử lý:</span>
+        <select class="zme-label-input" id="zme-label-team">
+          <option value="1">Hỗ trợ kỹ thuật</option>
+          <option value="10">LMS</option>
+          <option value="11">E-contract</option>
+          <option value="12">TMS</option>
+          <option value="6">CRM</option>
+          <option value="9">Xspace</option>
+          <option value="7">E-learning</option>
+        </select>
+      </div>
+      <div class="zme-label-group">
         <span class="zme-label-tag">Tiêu đề:</span>
         <input class="zme-label-input" id="zme-label-title" type="text" placeholder="Nhập tiêu đề..." />
       </div>
@@ -314,7 +326,7 @@ export class SidebarManager {
         senderNames.add(msg.senderName);
       }
     }
-    
+
     const datalist = this.querySelector<HTMLDataListElement>("#zme-customer-names");
     if (datalist) {
       datalist.innerHTML = Array.from(senderNames)
@@ -385,7 +397,10 @@ export class SidebarManager {
     // but the payload expects it.
     const email = this.querySelector<HTMLInputElement>("#zme-label-email")?.value.trim() ?? "";
 
-    const payload: OdooTicketPayload = { title, description, customerName, phone, email, tagNames, conversationText, markAsSolved };
+    const teamIdStr = this.querySelector<HTMLSelectElement>("#zme-label-team")?.value || "1";
+    const teamId = parseInt(teamIdStr, 10);
+
+    const payload: OdooTicketPayload = { title, description, customerName, phone, email, tagNames, conversationText, markAsSolved, teamId };
 
     // Set loading state
     if (this.odooBtn) {

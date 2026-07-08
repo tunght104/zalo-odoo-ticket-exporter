@@ -19,7 +19,6 @@ import type { OdooTicketPayload, OdooTicketResult, OdooCredentials } from "../sh
 
 const ODOO_URL = (import.meta.env.VITE_ODOO_URL as string) || "https://hrm.mindx.edu.vn";
 const ODOO_DB = (import.meta.env.VITE_ODOO_DB as string) || "mindxhrm";
-const ODOO_TEAM_ID = Number(import.meta.env.VITE_ODOO_TEAM_ID ?? 1);
 const ODOO_SOLVED_STAGE_ID = Number(import.meta.env.VITE_ODOO_SOLVED_STAGE_ID ?? 4);
 const ODOO_IN_PROGRESS_STAGE_ID = Number(import.meta.env.VITE_ODOO_IN_PROGRESS_STAGE_ID ?? 3);
 
@@ -173,7 +172,8 @@ async function createTicket(
   description: string,
   partnerId: number,
   tagIds: number[],
-  partnerEmail: string
+  partnerEmail: string,
+  teamId: number
 ): Promise<number> {
   const ticketId = await executeKw(
     uid, apiKey, "helpdesk.ticket", "create",
@@ -182,7 +182,7 @@ async function createTicket(
       description,
       partner_id: partnerId,
       partner_email: partnerEmail,
-      team_id: ODOO_TEAM_ID,
+      team_id: teamId,
       tag_ids: tagIds.map(id => [4, id]),
     }],
     {},
@@ -285,7 +285,8 @@ export async function handleCreateOdooTicket(payload: OdooTicketPayload): Promis
       payload.description,
       partnerId,
       tagIds,
-      payload.email
+      payload.email,
+      payload.teamId
     );
 
     // 5. Send mail with conversation text (ticket already exists at this point)

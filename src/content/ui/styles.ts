@@ -153,6 +153,11 @@ export const SIDEBAR_STYLES = `
 .zme-label-input:focus {
   border-color: rgba(99,102,241,0.5);
 }
+
+select.zme-label-input option {
+  background-color: #fff;
+  color: #111;
+}
 #zme-label-me { border-left: 2px solid #6366f1; }
 #zme-label-customer { border-left: 2px solid #10b981; }
 

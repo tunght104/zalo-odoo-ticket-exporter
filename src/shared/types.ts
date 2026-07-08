@@ -43,6 +43,8 @@ export interface OdooTicketPayload {
   conversationText: string;
   // Whether to mark the ticket as solved or in progress
   markAsSolved: boolean;
+  // Odoo team ID for the ticket
+  teamId: number;
 }
 
 /**
