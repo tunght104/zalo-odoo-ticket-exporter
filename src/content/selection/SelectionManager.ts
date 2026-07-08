@@ -45,6 +45,7 @@ export class SelectionManager {
         senderType: parsed.isMe ? "me" : "customer",
         text: parsed.text,
         selectedAt: Date.now(),
+        senderName: parsed.senderName,
       });
       chatItem.classList.add(CSS_CLASSES.SELECTED);
       this.onChange(this.selectedMessages);

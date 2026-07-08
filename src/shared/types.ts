@@ -10,6 +10,8 @@ export interface SelectedMessage {
   text: string;
   /** DOM-based sort index for maintaining conversation order */
   selectedAt: number;
+  /** Extracted sender name */
+  senderName?: string;
 }
 
 /**

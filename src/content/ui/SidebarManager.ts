@@ -30,7 +30,8 @@ function createSidebarHTML(): string {
       </div>
       <div class="zme-label-group">
         <span class="zme-label-tag">Tên khách hàng:</span>
-        <input class="zme-label-input" id="zme-label-customer" type="text" value="customer" placeholder="Nhập tên khách hàng..." />
+        <input class="zme-label-input" id="zme-label-customer" type="text" list="zme-customer-names" value="" placeholder="Nhập tên khách hàng (để trống sẽ lấy tên gốc)..." />
+        <datalist id="zme-customer-names"></datalist>
       </div>
       <div class="zme-label-group">
         <span class="zme-label-tag">Tiêu đề:</span>
@@ -302,6 +303,25 @@ export class SidebarManager {
     this.messages = [...messages];
     this.renderPreview();
     this.updateCount();
+
+    if (messages.length === 0 && this.labelCustomerInput) {
+      this.labelCustomerInput.value = "";
+    }
+
+    const senderNames = new Set<string>();
+    for (const msg of this.messages) {
+      if (msg.senderType === "customer" && msg.senderName) {
+        senderNames.add(msg.senderName);
+      }
+    }
+    
+    const datalist = this.querySelector<HTMLDataListElement>("#zme-customer-names");
+    if (datalist) {
+      datalist.innerHTML = Array.from(senderNames)
+        .map(name => `<option value="${name}"></option>`)
+        .join("");
+    }
+
     if (messages.length > 0 && !this.isOpen) {
       this.openSidebar();
     }

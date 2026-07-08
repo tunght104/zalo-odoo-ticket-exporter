@@ -7,6 +7,7 @@ export interface ParsedChatItem {
   element: HTMLElement;
   text: string;
   isMe: boolean;
+  senderName?: string;
 }
 
 /**
@@ -57,10 +58,44 @@ export class ZaloDOMParser {
     const text = this.extractCleanText(chatContent);
     if (!text) return null;
 
+    const isMe = item.classList.contains(ZALO_SELECTORS.ME_CLASS);
+    let senderName: string | undefined;
+
+    if (!isMe) {
+      let currentItem: Element | null = item;
+      while (currentItem) {
+        const nameEl = currentItem.querySelector(".message-sender-name-content .truncate");
+        if (nameEl) {
+          senderName = nameEl.textContent?.replace(/\u00A0/g, " ").trim();
+          break;
+        }
+        if (currentItem.classList.contains(ZALO_SELECTORS.ME_CLASS)) {
+          break;
+        }
+        currentItem = currentItem.previousElementSibling;
+        if (currentItem && !currentItem.classList.contains("chat-item")) {
+          break;
+        }
+      }
+
+      // Fallback for 1-on-1 chats where Zalo does not render sender names in the chat items.
+      // We can extract it from the input box placeholder attribute 'data-trailer'.
+      if (!senderName) {
+        const richInput = document.getElementById("richInput");
+        if (richInput) {
+          const trailer = richInput.getAttribute("data-trailer");
+          if (trailer) {
+            senderName = trailer.trim();
+          }
+        }
+      }
+    }
+
     return {
       element: item,
       text,
-      isMe: item.classList.contains(ZALO_SELECTORS.ME_CLASS),
+      isMe,
+      senderName,
     };
   }
 
