@@ -306,3 +306,30 @@ export async function handleCreateOdooTicket(payload: OdooTicketPayload): Promis
     return { success: false, error: msg };
   }
 }
+
+export async function handleUpdateOdooTicket(payload: import("../shared/types").OdooUpdateTicketPayload): Promise<OdooTicketResult> {
+  const stored = await chrome.storage.local.get(["odooEmail", "odooApiKey"]) as Partial<OdooCredentials>;
+  if (!stored.odooEmail || !stored.odooApiKey) {
+    return { success: false, error: "NOT_LOGGED_IN" };
+  }
+
+  const { odooEmail, odooApiKey } = stored as OdooCredentials;
+
+  try {
+    const uid = await authenticate(odooEmail, odooApiKey);
+
+    // 1. Send mail with conversation text to existing ticket
+    await sendMailToTicket(uid, odooApiKey, payload.ticketId, payload.conversationText);
+
+    // 2. Change stage to Solved if requested
+    if (payload.markAsSolved) {
+      await changeStageToSolved(uid, odooApiKey, payload.ticketId);
+    }
+
+    return { success: true, ticketId: payload.ticketId };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[OdooClient] updateOdooTicket error:", err);
+    return { success: false, error: msg };
+  }
+}

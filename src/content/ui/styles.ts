@@ -103,6 +103,35 @@ export const SIDEBAR_STYLES = `
   background: rgba(255,255,255,0.1);
 }
 
+/* ── Tabs ── */
+.zme-tabs {
+  display: flex;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+}
+.zme-tab {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #8b8ba7;
+  padding: 12px 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  outline: none;
+}
+.zme-tab:hover {
+  color: #c8c8e0;
+}
+.zme-tab.active {
+  color: #6366f1;
+  border-bottom-color: #6366f1;
+}
+
 /* ── Label Settings ── */
 .zme-label-section {
   padding: 16px 20px;

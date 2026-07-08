@@ -48,6 +48,15 @@ export interface OdooTicketPayload {
 }
 
 /**
+ * Payload sent from Content Script to Service Worker to update an existing Odoo ticket.
+ */
+export interface OdooUpdateTicketPayload {
+  ticketId: number;
+  conversationText: string;
+  markAsSolved: boolean;
+}
+
+/**
  * Response from Service Worker after attempting to create an Odoo ticket.
  */
 export interface OdooTicketResult {

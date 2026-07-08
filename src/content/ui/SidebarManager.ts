@@ -1,4 +1,4 @@
-import { SelectedMessage, SidebarOptions, OdooTicketPayload, OdooTicketResult } from "../../shared/types";
+import { SelectedMessage, SidebarOptions, OdooTicketPayload, OdooUpdateTicketPayload, OdooTicketResult } from "../../shared/types";
 import {
   SIDEBAR_ID,
   TOGGLE_BTN_ID,
@@ -23,17 +23,30 @@ function createSidebarHTML(): string {
       <button class="zme-close-btn" id="zme-close-btn">×</button>
     </div>
 
+    <div class="zme-tabs">
+      <button class="zme-tab active" data-tab="create">Tạo mới</button>
+      <button class="zme-tab" data-tab="update">Cập nhật</button>
+    </div>
+
     <div class="zme-label-section">
-      <div class="zme-label-group">
+
+      <!-- Update Only -->
+      <div class="zme-label-group zme-only-update" style="display: none;">
+        <span class="zme-label-tag">ID Ticket:</span>
+        <input class="zme-label-input" id="zme-label-ticket-id" type="number" placeholder="Nhập ID Ticket..." />
+      </div>
+
+      <!-- Create Only -->
+      <div class="zme-label-group zme-only-create">
         <span class="zme-label-tag">Tên của bạn:</span>
         <input class="zme-label-input" id="zme-label-me" type="text" value="me" placeholder="Nhập tên đại diện cho bạn..." />
       </div>
-      <div class="zme-label-group">
+      <div class="zme-label-group zme-only-create">
         <span class="zme-label-tag">Tên khách hàng:</span>
         <input class="zme-label-input" id="zme-label-customer" type="text" list="zme-customer-names" value="" placeholder="Nhập tên khách hàng (để trống sẽ lấy tên gốc)..." />
         <datalist id="zme-customer-names"></datalist>
       </div>
-      <div class="zme-label-group">
+      <div class="zme-label-group zme-only-create">
         <span class="zme-label-tag">Team xử lý:</span>
         <select class="zme-label-input" id="zme-label-team">
           <option value="1">Hỗ trợ kỹ thuật</option>
@@ -45,23 +58,23 @@ function createSidebarHTML(): string {
           <option value="7">E-learning</option>
         </select>
       </div>
-      <div class="zme-label-group">
+      <div class="zme-label-group zme-only-create">
         <span class="zme-label-tag">Tiêu đề:</span>
         <input class="zme-label-input" id="zme-label-title" type="text" placeholder="Nhập tiêu đề..." />
       </div>
-      <div class="zme-label-group">
+      <div class="zme-label-group zme-only-create">
         <span class="zme-label-tag">Mô tả:</span>
         <input class="zme-label-input" id="zme-label-desc" type="text" placeholder="Nhập mô tả..." />
       </div>
-      <div class="zme-label-group">
+      <div class="zme-label-group zme-only-create">
         <span class="zme-label-tag">Số điện thoại:</span>
         <input class="zme-label-input" id="zme-label-phone" type="text" placeholder="Nhập số điện thoại..." />
       </div>
-      <div class="zme-label-group">
+      <div class="zme-label-group zme-only-create">
         <span class="zme-label-tag">Email:</span>
         <input class="zme-label-input" id="zme-label-email" type="email" placeholder="Nhập email khách hàng..." />
       </div>
-      <div class="zme-label-group">
+      <div class="zme-label-group zme-only-create">
         <span class="zme-label-tag">Tag:</span>
         <input class="zme-label-input" id="zme-label-tag" type="text" placeholder="Nhập các tag cách nhau bởi dấu phẩy..." />
       </div>
@@ -114,6 +127,7 @@ export class SidebarManager {
 
   private isOpen = false;
   private _isSelectModeActive = false;
+  private activeTab: "create" | "update" = "create";
   private messages: SelectedMessage[] = [];
   private readonly options: SidebarOptions;
   private readonly toast: ToastManager;
@@ -261,7 +275,15 @@ export class SidebarManager {
     this.copyBtn?.addEventListener("click", () => this.copyToClipboard());
 
     this.odooBtn = this.querySelector<HTMLButtonElement>("#zme-odoo-btn");
-    this.odooBtn?.addEventListener("click", () => this.createOdooTicket());
+    this.odooBtn?.addEventListener("click", () => this.submitToOdoo());
+
+    const tabs = this.sidebar?.querySelectorAll<HTMLButtonElement>(".zme-tab");
+    tabs?.forEach(tab => {
+      tab.addEventListener("click", () => {
+        const tabName = tab.getAttribute("data-tab") as "create" | "update";
+        if (tabName) this.switchTab(tabName);
+      });
+    });
 
     this.querySelector<HTMLButtonElement>("#zme-clear-btn")
       ?.addEventListener("click", () => {
@@ -307,6 +329,38 @@ export class SidebarManager {
   closeSidebar(): void {
     this.isOpen = false;
     this.sidebar?.classList.remove(CSS_CLASSES.SIDEBAR_OPEN);
+  }
+
+  // ── Tabs ────────────────────────────────────────────────────────────────────
+
+  private switchTab(tab: "create" | "update"): void {
+    this.activeTab = tab;
+
+    // Update active class on buttons
+    const tabs = this.sidebar?.querySelectorAll<HTMLButtonElement>(".zme-tab");
+    tabs?.forEach(btn => {
+      if (btn.getAttribute("data-tab") === tab) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    });
+
+    // Update visibility of sections
+    const creates = this.sidebar?.querySelectorAll<HTMLElement>(".zme-only-create");
+    creates?.forEach(el => {
+      el.style.display = tab === "create" ? "" : "none";
+    });
+
+    const updates = this.sidebar?.querySelectorAll<HTMLElement>(".zme-only-update");
+    updates?.forEach(el => {
+      el.style.display = tab === "update" ? "" : "none";
+    });
+
+    // Update button text
+    if (this.odooBtn) {
+      this.odooBtn.textContent = tab === "create" ? "🎫 Tạo Ticket" : "🎫 Cập nhật Ticket";
+    }
   }
 
   // ── Messages ────────────────────────────────────────────────────────────────
@@ -365,6 +419,66 @@ export class SidebarManager {
   }
 
   // ── Odoo Ticket ─────────────────────────────────────────────────────────────
+
+  private async submitToOdoo(): Promise<void> {
+    if (this.activeTab === "create") {
+      await this.createOdooTicket();
+    } else {
+      await this.updateOdooTicket();
+    }
+  }
+
+  private async updateOdooTicket(): Promise<void> {
+    if (this.messages.length === 0) {
+      this.showToast("⚠️ Chưa có tin nhắn nào để cập nhật ticket!");
+      return;
+    }
+
+    const ticketIdStr = this.querySelector<HTMLInputElement>("#zme-label-ticket-id")?.value.trim() ?? "";
+    const ticketId = parseInt(ticketIdStr, 10);
+    if (!ticketId || isNaN(ticketId)) {
+      this.showToast("⚠️ Vui lòng nhập ID Ticket hợp lệ!");
+      return;
+    }
+
+    const customerName = this.querySelector<HTMLInputElement>("#zme-label-customer")?.value.trim() || "customer";
+    const meLabel = this.querySelector<HTMLInputElement>("#zme-label-me")?.value.trim() || "me";
+    const conversationText = this.formatter.formatAsText(this.messages, meLabel, customerName);
+    const markAsSolved = this.querySelector<HTMLInputElement>("#zme-label-solved")?.checked ?? true;
+
+    const payload: OdooUpdateTicketPayload = { ticketId, conversationText, markAsSolved };
+
+    if (this.odooBtn) {
+      this.odooBtn.disabled = true;
+      this.odooBtn.textContent = "⏳ Đang cập nhật...";
+    }
+
+    chrome.runtime.sendMessage(
+      { type: "UPDATE_ODOO_TICKET", payload },
+      (result: OdooTicketResult) => {
+        if (this.odooBtn) {
+          this.odooBtn.disabled = false;
+          this.odooBtn.textContent = "🎫 Cập nhật Ticket";
+        }
+
+        if (!result) {
+          this.showToast("❌ Không nhận được phản hồi từ extension. Hãy thử reload trang.");
+          return;
+        }
+
+        if (!result.success) {
+          if (result.error === "NOT_LOGGED_IN") {
+            this.showToast("⚠️ Vui lòng đăng nhập Odoo trong popup extension trước!");
+          } else {
+            this.showToast(`❌ Lỗi: ${result.error ?? "Không xác định"}`);
+          }
+          return;
+        }
+
+        this.showToast(`✅ Đã cập nhật ticket #${result.ticketId} thành công!`);
+      }
+    );
+  }
 
   private async createOdooTicket(): Promise<void> {
     if (this.messages.length === 0) {

@@ -4,14 +4,14 @@
  * Thin message router — delegates Odoo logic to odoo-client.ts.
  */
 
-import type { OdooTicketPayload, OdooCredentials } from "../shared/types";
-import { handleCreateOdooTicket } from "./odoo-client";
+import type { OdooTicketPayload, OdooUpdateTicketPayload, OdooCredentials } from "../shared/types";
+import { handleCreateOdooTicket, handleUpdateOdooTicket } from "./odoo-client";
 
 // ─── Message listener ────────────────────────────────────────────────────────────
 
 interface IncomingMessage {
   type: string;
-  payload?: OdooTicketPayload;
+  payload?: OdooTicketPayload | OdooUpdateTicketPayload;
 }
 
 chrome.runtime.onMessage.addListener(
@@ -21,8 +21,17 @@ chrome.runtime.onMessage.addListener(
         sendResponse({ success: false, error: "Missing payload" });
         return true;
       }
-      void handleCreateOdooTicket(request.payload).then(sendResponse);
+      void handleCreateOdooTicket(request.payload as OdooTicketPayload).then(sendResponse);
       return true; // keep channel open for async response
+    }
+
+    if (request.type === "UPDATE_ODOO_TICKET") {
+      if (!request.payload) {
+        sendResponse({ success: false, error: "Missing payload" });
+        return true;
+      }
+      void handleUpdateOdooTicket(request.payload as OdooUpdateTicketPayload).then(sendResponse);
+      return true;
     }
 
     if (request.type === "GET_ODOO_AUTH_STATUS") {
